@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Attendance & Analytics Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --border: #e2e8f0;
+    --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+
+    --success-bg: #dcfce7;
+    --success-text: #15803d;
+    --danger-bg: #fee2e2;
+    --danger-text: #b91c1c;
+    --warning-bg: #fef3c7;
+    --warning-text: #b45309;
+}
+
+body.dark {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border: #334155;
+    --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+
+    --success-bg: #064e3b;
+    --success-text: #6ee7b7;
+    --danger-bg: #7f1d1d;
+    --danger-text: #fca5a5;
+    --warning-bg: #78350f;
+    --warning-text: #fde047;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    padding: 20px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    background: var(--bg-card);
+    padding: 24px 30px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.header-title h1 {
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-title p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Dashboard Metrics */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.card {
+    background: var(--bg-card);
+    padding: 18px 20px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+}
+
+.card p {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card h2 {
+    font-size: 26px;
+    font-weight: 800;
+    margin-top: 4px;
+}
+
+.card.present h2 { color: #10b981; }
+.card.absent h2 { color: #ef4444; }
+.card.late h2 { color: #f59e0b; }
+.card.rate h2 { color: var(--accent); }
+.card.alert h2 { color: #dc2626; }
+
+/* Control & Filter Bar */
+.controls-bar {
+    background: var(--bg-card);
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.controls-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 14px 10px 38px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 14px;
+    outline: none;
+}
+
+.search-box::before {
+    content: "🔍";
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    opacity: 0.6;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.pill-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pill-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+}
+
+.date-picker {
+    padding: 9px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Buttons */
+.btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary { background: var(--bg-main); color: var(--text-primary); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+
+.btn-success { background: #10b981; color: white; }
+.btn-success:hover { background: #059669; }
+
+/* Student List */
+.student-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.student-card {
+    background: var(--bg-card);
+    padding: 16px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.student-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.student-details h3 { font-size: 15px; font-weight: 700; }
+.student-details .meta-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 3px;
+}
+
+.student-details span { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
+
+.badge-alert {
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+.badge-safe {
+    background: var(--success-bg);
+    color: var(--success-text);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+
+/* Status Selectors */
+.status-group {
+    display: flex;
+    background: var(--bg-main);
+    padding: 4px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    gap: 4px;
+}
+
+.status-btn {
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-btn.present.active { background: var(--success-bg); color: var(--success-text); }
+.status-btn.absent.active { background: var(--danger-bg); color: var(--danger-text); }
+.status-btn.late.active { background: var(--warning-bg); color: var(--warning-text); }
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    opacity: 0.7;
+    padding: 6px;
+    border-radius: 6px;
+    transition: opacity 0.2s;
+}
+
+.icon-btn:hover { opacity: 1; background: var(--bg-main); }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+    background: var(--bg-card);
+    padding: 24px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+}
+
+.modal h2 { margin-bottom: 16px; font-size: 20px; }
+
+.modal input, .modal textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-main);
+    color: var(--text-primary);
+    margin-bottom: 14px;
+    font-size: 14px;
+    outline: none;
+}
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+@media (max-width: 768px) {
+    .student-card { flex-direction: column; align-items: flex-start; }
+    .card-actions { width: 100%; justify-content: space-between; }
+    .status-group { flex: 1; justify-content: space-around; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>📋 Attendance Tracker & Analytics</h1>
+            <p>Class Register - Department of Computer Science (CI)</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" id="darkBtn" onclick="toggleDarkMode()">🌙 Dark Mode</button>
+            <button class="btn btn-success" onclick="exportCSV()">📥 Export CSV</button>
+            <button class="btn btn-primary" onclick="openModal()">➕ Add Student</button>
+        </div>
+    </header>
+
+    <!-- Metrics Dashboard -->
+    <div class="dashboard">
+        <div class="card">
+            <p>Total Class</p>
+            <h2 id="totalStudents">0</h2>
+        </div>
+        <div class="card present">
+            <p>Present Today</p>
+            <h2 id="presentStudents">0</h2>
+        </div>
+        <div class="card absent">
+            <p>Absent Today</p>
+            <h2 id="absentStudents">0</h2>
+        </div>
+        <div class="card late">
+            <p>Late Today</p>
+            <h2 id="lateStudents">0</h2>
+        </div>
+        <div class="card rate">
+            <p>Class Avg Rate</p>
+            <h2 id="attendanceRate">0%</h2>
+        </div>
+        <div class="card alert">
+            <p>Shortage Alert (<75%)</p>
+            <h2 id="shortageCount">0</h2>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+        <div class="controls-top">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="Search by Student Name or USN..." oninput="displayStudents()">
+            </div>
+            <input type="date" id="attendanceDate" class="date-picker" onchange="loadDateRecord()">
+            <div class="action-btns">
+                <button class="btn btn-secondary" onclick="markAll('Present')">Mark All Present</button>
+                <button class="btn btn-secondary" onclick="resetAttendance()">Reset</button>
+            </div>
+        </div>
+
+        <!-- Filter Pills -->
+        <div class="filter-pills">
+            <button class="pill-btn active" onclick="setFilter('ALL', this)">All Students</button>
+            <button class="pill-btn" onclick="setFilter('Present', this)">Present</button>
+            <button class="pill-btn" onclick="setFilter('Late', this)">Late</button>
+            <button class="pill-btn" onclick="setFilter('Absent', this)">Absent</button>
+            <button class="pill-btn" onclick="setFilter('Unmarked', this)">Unmarked</button>
+            <button class="pill-btn" onclick="setFilter('SHORTAGE', this)">⚠️ Shortage (&lt;75%)</button>
+        </div>
+    </div>
+
+    <!-- Student List -->
+    <div class="student-list" id="studentList"></div>
+
+</div>
+
+<!-- Modal for Adding/Editing Students & Notes -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h2 id="modalTitle">Add New Student</h2>
+        <input type="text" id="studentNameInput" placeholder="Enter student full name">
+        <textarea id="studentNoteInput" placeholder="Add optional remarks/notes (e.g., Medical Leave)..." rows="3"></textarea>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            <button class="btn btn-primary" onclick="saveStudentFromModal()">Save</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let defaultStudents = [
+    "A ARUN PRAKASH", "ABILASH K", "ANGELINA MICHLE CLARKE", "ANOKSHA T S", "BHAVYA T",
+    "CHANDANA M", "CHANDRIKA N", "CHATURNI R", "CHIRASVI M", "DARSHINI N", "DEEPIKA S",
+    "ENOCH KIRUBAGARAN R", "GUNASHREE V", "INFAN NIVETHA S", "J A MERLIN ANUSHA", "JENILIA S",
+    "K P ASHWITHA", "K S SHARIKA", "KAVYA RK", "KEERTHANA P", "KISHAN J", "L MOHAMMED FAHAD",
+    "MADHAVA R K", "MANU KUMAR BC", "MEHFUZA KHANUM", "MOHAMMED NOUMAN MN", "MOHAMMED SAAD KALAKERI",
+    "MS SANJANA PRIYA", "MURALI G", "NAVEEN M", "NAVEEN S", "NISHITHA ROSY S", "NITISH M",
+    "PALLAVI V", "R NEHA", "R S TEJA SHREE", "R VATHSALA", "RAJEEV S", "RENO", "ROSELINA MARY",
+    "SANJAY S", "SAQUIB ULLA KHAN", "SATWIK SIDDALINGAPPA SALADAHALLI", "SHAILESH P", "SHINY V",
+    "SHRISHAIL HIREMATH", "SHRUSTY B S", "SUPRIYA B", "SYBEL BLESSY B", "TEJASHREE V",
+    "V N PRAKASH", "VAISHNAV B S", "VAISHNAVI", "VAISHNAVI M", "VANESSA OBELIA VAZ",
+    "VIDYA SHAKTHI M A", "VIGNESH J", "PRAGNA K V", "R AKSHAY", "SUMIT", "CHARAN KUMAR K V"
+];
+
+let students = JSON.parse(localStorage.getItem("studentsList")) || defaultStudents;
+let attendanceRecords = JSON.parse(localStorage.getItem("attendanceRecords")) || {};
+let studentNotes = JSON.parse(localStorage.getItem("studentNotes")) || {};
+let currentFilter = 'ALL';
+let editingIndex = null;
+
+// Initialize Date
+const datePicker = document.getElementById("attendanceDate");
+datePicker.value = new Date().toISOString().split('T')[0];
+
+function getUSN(index) {
+    return "1GV25CI" + (index + 1).toString().padStart(3, '0');
+}
+
+function saveStudents() {
+    localStorage.setItem("studentsList", JSON.stringify(students));
+}
+
+function saveAttendance() {
+    localStorage.setItem("attendanceRecords", JSON.stringify(attendanceRecords));
+    updateDashboard();
+}
+
+function saveNotes() {
+    localStorage.setItem("studentNotes", JSON.stringify(studentNotes));
+}
+
+function loadDateRecord() {
+    displayStudents();
+}
+
+function getInitials(name) {
+    let parts = name.trim().split(" ");
+    return (parts[0][0] + (parts[1] ? parts[1][0] : "")).toUpperCase();
+}
+
+function setStatus(studentName, status) {
+    let selectedDate = datePicker.value;
+    if (!attendanceRecords[selectedDate]) attendanceRecords[selectedDate] = {};
+    attendanceRecords[selectedDate][studentName] = status;
+    saveAttendance();
+    displayStudents();
+}
+
+function markAll(status) {
+    let selectedDate = datePicker.value;
+    if (!attendanceRecords[selectedDate]) attendanceRecords[selectedDate] = {};
+    students.forEach(s => { attendanceRecords[selectedDate][s] = status; });
+    saveAttendance();
+    displayStudents();
+}
+
+function resetAttendance() {
+    let selectedDate = datePicker.value;
+    if (attendanceRecords[selectedDate]) {
+        delete attendanceRecords[selectedDate];
+        saveAttendance();
+        displayStudents();
+    }
+}
+
+function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.pill-btn').forEach(btn => btn.classList.remove('active'));
+    el.classList.add('active');
+    displayStudents();
+}
+
+// Calculate individual student cumulative rate across all dates
+function getOverallStudentRate(studentName) {
+    let totalDays = 0, presentDays = 0;
+    Object.keys(attendanceRecords).forEach(date => {
+        let status = attendanceRecords[date][studentName];
+        if (status) {
+            totalDays++;
+            if (status === 'Present' || status === 'Late') presentDays++;
+        }
+    });
+    return totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 100;
+}
+
+function displayStudents() {
+    let list = document.getElementById("studentList");
+    let search = document.getElementById("search").value.toLowerCase();
+    let selectedDate = datePicker.value;
+    let records = attendanceRecords[selectedDate] || {};
+
+    list.innerHTML = "";
+
+    let filtered = students.filter((s, idx) => {
+        let usn = getUSN(idx).toLowerCase();
+        let matchesSearch = s.toLowerCase().includes(search) || usn.includes(search);
+        let status = records[s] || "Unmarked";
+        let rate = getOverallStudentRate(s);
+
+        let matchesFilter = true;
+        if (currentFilter === 'SHORTAGE') matchesFilter = rate < 75;
+        else if (currentFilter !== 'ALL') matchesFilter = status === currentFilter;
+
+        return matchesSearch && matchesFilter;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-secondary);">No students match the criteria.</div>`;
+        updateDashboard();
+        return;
+    }
+
+    filtered.forEach((student) => {
+        let actualIndex = students.indexOf(student);
+        let usn = getUSN(actualIndex);
+        let status = records[student] || "Unmarked";
+        let overallRate = getOverallStudentRate(student);
+        let note = studentNotes[student] || "";
+
+        let card = document.createElement("div");
+        card.className = "student-card";
+        card.innerHTML = `
+            <div class="student-info">
+                <div class="avatar">${getInitials(student)}</div>
+                <div class="student-details">
+                    <h3>${student}</h3>
+                    <div class="meta-line">
+                        <span>USN: ${usn}</span>
+                        <span class="${overallRate < 75 ? 'badge-alert' : 'badge-safe'}">
+                            Overall: ${overallRate}%
+                        </span>
+                        ${note ? `<span style="color:var(--accent);">📝 ${note}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-actions">
+                <div class="status-group">
+                    <button class="status-btn present ${status === 'Present' ? 'active' : ''}" 
+                        onclick="setStatus('${student}', 'Present')">Present</button>
+                    <button class="status-btn late ${status === 'Late' ? 'active' : ''}" 
+                        onclick="setStatus('${student}', 'Late')">Late</button>
+                    <button class="status-btn absent ${status === 'Absent' ? 'active' : ''}" 
+                        onclick="setStatus('${student}', 'Absent')">Absent</button>
+                </div>
+                <button class="icon-btn" title="Edit Student & Notes" onclick="openModal(${actualIndex})">✏️</button>
+                <button class="icon-btn" title="Delete Student" onclick="deleteStudent(${actualIndex})">🗑️</button>
+            </div>
+        `;
+        list.appendChild(card);
+    });
+
+    updateDashboard();
+}
+
+function updateDashboard() {
+    let selectedDate = datePicker.value;
+    let records = attendanceRecords[selectedDate] || {};
+
+    let total = students.length;
+    let present = 0, absent = 0, late = 0, shortage = 0;
+
+    students.forEach(s => {
+        let st = records[s];
+        if (st === 'Present') present++;
+        else if (st === 'Absent') absent++;
+        else if (st === 'Late') late++;
+
+        if (getOverallStudentRate(s) < 75) shortage++;
+    });
+
+    let rate = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+
+    document.getElementById("totalStudents").innerText = total;
+    document.getElementById("presentStudents").innerText = present;
+    document.getElementById("absentStudents").innerText = absent;
+    document.getElementById("lateStudents").innerText = late;
+    document.getElementById("attendanceRate").innerText = rate + "%";
+    document.getElementById("shortageCount").innerText = shortage;
+}
+
+/* CSV Export */
+function exportCSV() {
+    let selectedDate = datePicker.value;
+    let records = attendanceRecords[selectedDate] || {};
+    
+    let csv = "USN,Student Name,Status,Overall Rate,Remarks\n";
+    students.forEach((s, idx) => {
+        let usn = getUSN(idx);
+        let status = records[s] || "Unmarked";
+        let rate = getOverallStudentRate(s) + "%";
+        let note = (studentNotes[s] || "").replace(/,/g, " ");
+        csv += `"${usn}","${s}","${status}","${rate}","${note}"\n`;
+    });
+
+    let blob = new Blob([csv], { type: 'text/csv' });
+    let url = window.URL.createObjectURL(blob);
+    let a = document.createElement('a');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `Attendance_Report_${selectedDate}.csv`);
+    a.click();
+}
+
+/* Modal Functions */
+function openModal(index = null) {
+    editingIndex = index;
+    const overlay = document.getElementById("modalOverlay");
+    const title = document.getElementById("modalTitle");
+    const nameInput = document.getElementById("studentNameInput");
+    const noteInput = document.getElementById("studentNoteInput");
+
+    if (index !== null) {
+        title.innerText = "Edit Student Details";
+        nameInput.value = students[index];
+        noteInput.value = studentNotes[students[index]] || "";
+    } else {
+        title.innerText = "Add New Student";
+        nameInput.value = "";
+        noteInput.value = "";
+    }
+    overlay.classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("modalOverlay").classList.remove("active");
+}
+
+function saveStudentFromModal() {
+    let name = document.getElementById("studentNameInput").value.trim();
+    let note = document.getElementById("studentNoteInput").value.trim();
+
+    if (!name) return alert("Please enter a valid name.");
+
+    if (editingIndex !== null) {
+        let oldName = students[editingIndex];
+        students[editingIndex] = name;
+        if (note) studentNotes[name] = note;
+        else delete studentNotes[name];
+    } else {
+        students.push(name);
+        if (note) studentNotes[name] = note;
+    }
+
+    saveStudents();
+    saveNotes();
+    closeModal();
+    displayStudents();
+}
+
+function deleteStudent(index) {
+    if (confirm(`Remove ${students[index]} from class list?`)) {
+        delete studentNotes[students[index]];
+        students.splice(index, 1);
+        saveStudents();
+        saveNotes();
+        displayStudents();
+    }
+}
+
+/* Dark Mode */
+function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    let isDark = document.body.classList.contains("dark");
+    document.getElementById("darkBtn").innerText = isDark ? "☀️ Light Mode" : "🌙 Dark Mode";
+}
+
+// Initial Run
+saveStudents();
+displayStudents();
+</script>
+
+</body>
+</html>
